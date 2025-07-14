@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-public class RequestControllr {
+public class RequestController {
 
     private final RequestService service;
 
