@@ -10,7 +10,7 @@ public class RequestStatus {
     private Long id;
 
     @Enumerated(EnumType.STRING)
-    private Status status;  // Using enum type
+    private Status status;
 
     private String details;
 
