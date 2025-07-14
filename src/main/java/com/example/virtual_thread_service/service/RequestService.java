@@ -46,7 +46,7 @@ public class RequestService {
         submitCounter.increment();
 
         RequestStatus request = new RequestStatus();
-        request.setStatus("PENDING");
+        request.setStatus(RequestStatus.Status.PENDING);
         request.setDetails(jsonPayload);
         repository.save(request);
 
@@ -54,11 +54,11 @@ public class RequestService {
             processingTimer.record(() -> {
                 try {
                     Thread.sleep(5000); // Mock 3rd party call
-                    request.setStatus("COMPLETED");
+                    request.setStatus(RequestStatus.Status.COMPLETED);
                     request.setDetails("3rd party response here");
                     repository.save(request);
                 } catch (InterruptedException e) {
-                    request.setStatus("FAILED");
+                    request.setStatus(RequestStatus.Status.FAILED);
                     repository.save(request);
                     errorCounter.increment();
                 }

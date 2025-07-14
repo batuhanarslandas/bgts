@@ -9,15 +9,36 @@ public class RequestStatus {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String status;  // "PENDING", "COMPLETED", "FAILED"
+    @Enumerated(EnumType.STRING)
+    private Status status;  // Using enum type
+
     private String details;
+
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+    public Status getStatus() { return status; }
+    public void setStatus(Status status) { this.status = status; }
 
     public String getDetails() { return details; }
     public void setDetails(String details) { this.details = details; }
+
+
+    public enum Status {
+        PENDING("PENDING"),
+        PROCESSING("Processing"),
+        COMPLETED("COMPLETED"),
+        FAILED("FAILED");
+
+        private final String displayName;
+
+        Status(String displayName) {
+            this.displayName = displayName;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
+    }
 }
