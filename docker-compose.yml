@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   prometheus:
     image: prom/prometheus
@@ -10,3 +12,19 @@ services:
     image: grafana/grafana
     ports:
       - "3000:3000"
+
+  postgres:
+    image: postgres:15
+    container_name: pg_container
+    restart: always
+    environment:
+      POSTGRES_DB: virtual_thread_db
+      POSTGRES_USER: vtuser
+      POSTGRES_PASSWORD: vtpassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+volumes:
+  pg_data:
