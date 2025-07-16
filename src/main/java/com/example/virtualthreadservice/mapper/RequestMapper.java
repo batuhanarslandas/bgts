@@ -4,8 +4,15 @@ import com.example.virtualthreadservice.dto.RequestResponseDTO;
 import com.example.virtualthreadservice.entity.RequestStatusEntity;
 import com.example.virtualthreadservice.model.RequestDomainModel;
 
-public class RequestMapper {
+/**
+ * Mapper sınıfı: Katmanlar arası veri dönüşümünü merkezi olarak sağlar.
+ * Entity  => Domain, DTO dönüşümleri burada yapılır.
+ */
+public final class RequestMapper {
 
+    /**
+     * Veritabanı varlığı olan Entity nesnesini, Domain modele dönüştürür.
+     */
     public static RequestDomainModel toDomain(RequestStatusEntity entity) {
         return RequestDomainModel.of(
                 entity.getId(),
@@ -15,6 +22,9 @@ public class RequestMapper {
         );
     }
 
+    /**
+     * Domain modelini, dış API’ye döneceğimiz DTO nesnesine çevirir.
+     */
     public static RequestResponseDTO toDTO(RequestDomainModel domain) {
         return new RequestResponseDTO(
                 domain.getId(),

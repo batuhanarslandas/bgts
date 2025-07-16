@@ -4,6 +4,9 @@ import lombok.Getter;
 
 import java.time.Instant;
 
+/**
+ * Entity'den izole tutularak DTO ve Entity arasında bir geçiş katmanı gibi kullanılır.
+ */
 @Getter
 public final class RequestDomainModel {
     private final Long id;
