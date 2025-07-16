@@ -62,4 +62,8 @@ public class RequestStatusEntity {
             return displayName;
         }
     }
+
+    public RequestStatusEntity withStatus(Status newStatus, String description) {
+        return new RequestStatusEntity(this.id, this.payload, newStatus, description, this.createdAt);
+    }
 }
