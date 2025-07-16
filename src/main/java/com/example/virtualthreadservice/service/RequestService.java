@@ -52,7 +52,7 @@ public final class RequestService {
 
         this.processingTimer = Timer.builder("request_processing_duration")
                 .description("Duration of processing 3rd party request")
-                .publishPercentileHistogram(true) // 👈 histogram verisini etkinleştir
+                .publishPercentileHistogram(true)
                 .register(meterRegistry);
     }
 
