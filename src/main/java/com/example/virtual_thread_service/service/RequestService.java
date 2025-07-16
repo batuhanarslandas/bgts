@@ -24,9 +24,8 @@ import java.util.concurrent.Executors;
 @Service
 public class RequestService {
 
-    private final String THIRD_PARTY_BASE_API = "http://localhost:5000";
-
     private static final Logger logger = LoggerFactory.getLogger(RequestService.class);
+    private static final String THIRD_PARTY_URL = "http://localhost:5000/mock";
 
     private final RequestStatusRepository repository;
     private final ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
@@ -59,7 +58,7 @@ public class RequestService {
     public HttpResponse<String> callThirdPartyMockService() throws IOException, InterruptedException {
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:5000/mock"))
+                .uri(URI.create(THIRD_PARTY_URL))
                 .GET()
                 .build();
 
@@ -81,25 +80,22 @@ public class RequestService {
         repository.save(requestStatusEntity);
 
         executor.submit(() -> {
+            RequestStatusEntity processing = requestStatusEntity.withStatus(RequestStatusEntity.Status.PROCESSING, "Processing started");
+            repository.save(processing);
+            logger.info("Request ID {} set to PROCESSING", processing.getId());
+
             processingTimer.record(() -> {
                 try {
                     logger.info("Processing started for ID: {}", requestStatusEntity.getId());
 
                     // 3rd party API call
-
                     HttpResponse<String> response = callThirdPartyMockService();
 
                     if (response.statusCode() == 200) {
                         String responseBody = response.body();
                         logger.info("3rd party response received: {}", responseBody);
 
-                        RequestStatusEntity updated = new RequestStatusEntity(
-                                requestStatusEntity.getId(),
-                                jsonPayload,
-                                RequestStatusEntity.Status.COMPLETED,
-                                responseBody,
-                                requestStatusEntity.getCreatedAt()
-                        );
+                        RequestStatusEntity updated = requestStatusEntity.withStatus(RequestStatusEntity.Status.COMPLETED, responseBody);
 
                         repository.save(updated);
                         logger.info("Processing completed for ID: {}", requestStatusEntity.getId());
@@ -109,13 +105,7 @@ public class RequestService {
 
                 } catch (Exception e) {
                     logger.error("Processing failed: {}", e.getMessage());
-                    RequestStatusEntity failed = new RequestStatusEntity(
-                            requestStatusEntity.getId(),
-                            jsonPayload,
-                            RequestStatusEntity.Status.FAILED,
-                            "Error occurred: " + e.getMessage(),
-                            requestStatusEntity.getCreatedAt()
-                    );
+                    RequestStatusEntity failed = requestStatusEntity.withStatus(RequestStatusEntity.Status.FAILED, "Error occurred: " + e.getMessage());
                     repository.save(failed);
                     errorCounter.increment();
                 }
