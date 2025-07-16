@@ -2,6 +2,7 @@ package com.example.virtualthreadservice.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -10,6 +11,7 @@ import java.time.Instant;
 @Entity
 @Table(name = "request_status")
 @Getter
+@Builder
 @NoArgsConstructor(force = true)
 @AllArgsConstructor
 public class RequestStatusEntity {
@@ -46,6 +48,12 @@ public class RequestStatusEntity {
     }
 
     public RequestStatusEntity withStatus(Status newStatus, String description) {
-        return new RequestStatusEntity(this.id, this.payload, newStatus, description, this.createdAt);
+        return RequestStatusEntity.builder()
+                .id(this.id)
+                .payload(this.payload)
+                .status(newStatus)
+                .details(description)
+                .createdAt(this.createdAt)
+                .build();
     }
 }
