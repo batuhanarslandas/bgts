@@ -11,6 +11,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
@@ -18,6 +23,8 @@ import java.util.concurrent.Executors;
 
 @Service
 public class RequestService {
+
+    private final String THIRD_PARTY_BASE_API = "http://localhost:5000";
 
     private static final Logger logger = LoggerFactory.getLogger(RequestService.class);
 
@@ -49,6 +56,16 @@ public class RequestService {
                 .register(meterRegistry);
     }
 
+    public HttpResponse<String> callThirdPartyMockService() throws IOException, InterruptedException {
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:5000/mock"))
+                .GET()
+                .build();
+
+        return client.send(request, HttpResponse.BodyHandlers.ofString());
+    }
+
     public Long submitRequest(String jsonPayload) {
         submitCounter.increment();
         logger.info("Submit request received. Payload: {}", jsonPayload);
@@ -67,25 +84,36 @@ public class RequestService {
             processingTimer.record(() -> {
                 try {
                     logger.info("Processing started for ID: {}", requestStatusEntity.getId());
-                    Thread.sleep(5000); // Mock 3rd party call
 
-                    RequestStatusEntity updated = new RequestStatusEntity(
-                            requestStatusEntity.getId(),
-                            jsonPayload,
-                            RequestStatusEntity.Status.COMPLETED,
-                            "3rd party response here",
-                            requestStatusEntity.getCreatedAt()
-                    );
+                    // 3rd party API call
 
-                    repository.save(updated);
-                    logger.info("Processing completed for ID: {}", requestStatusEntity.getId());
-                } catch (InterruptedException e) {
+                    HttpResponse<String> response = callThirdPartyMockService();
+
+                    if (response.statusCode() == 200) {
+                        String responseBody = response.body();
+                        logger.info("3rd party response received: {}", responseBody);
+
+                        RequestStatusEntity updated = new RequestStatusEntity(
+                                requestStatusEntity.getId(),
+                                jsonPayload,
+                                RequestStatusEntity.Status.COMPLETED,
+                                responseBody,
+                                requestStatusEntity.getCreatedAt()
+                        );
+
+                        repository.save(updated);
+                        logger.info("Processing completed for ID: {}", requestStatusEntity.getId());
+                    } else {
+                        throw new RuntimeException("3rd party call failed with status code: " + response.statusCode());
+                    }
+
+                } catch (Exception e) {
                     logger.error("Processing failed: {}", e.getMessage());
                     RequestStatusEntity failed = new RequestStatusEntity(
                             requestStatusEntity.getId(),
                             jsonPayload,
                             RequestStatusEntity.Status.FAILED,
-                            "Error occurred",
+                            "Error occurred: " + e.getMessage(),
                             requestStatusEntity.getCreatedAt()
                     );
                     repository.save(failed);
@@ -96,6 +124,7 @@ public class RequestService {
 
         return requestStatusEntity.getId();
     }
+
 
     public Optional<RequestDomainModel> getStatus(Long id) {
         statusCounter.increment();
