@@ -1,11 +1,17 @@
 package com.example.virtual_thread_service.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 
 @Entity
 @Table(name = "request_status")
+@Getter
+@NoArgsConstructor(force = true)
+@AllArgsConstructor
 public class RequestStatusEntity {
 
     @Id
@@ -23,29 +29,8 @@ public class RequestStatusEntity {
     @Column(nullable = false)
     private final Instant createdAt;
 
-    protected RequestStatusEntity() {
-        this.id = null;
-        this.payload = null;
-        this.status = null;
-        this.details = null;
-        this.createdAt = null;
-    }
 
-    public RequestStatusEntity(Long id, String payload, Status status, String details, Instant createdAt) {
-        this.id = id;
-        this.payload = payload;
-        this.status = status;
-        this.details = details;
-        this.createdAt = createdAt;
-    }
-
-    public Long getId() { return id; }
-    public String getPayload() { return payload; }
-    public Status getStatus() { return status; }
-    public Status getDetails() { return status; }
-    public Instant getCreatedAt() { return createdAt; }
-
-
+    @Getter
     public enum Status {
         PENDING("PENDING"),
         PROCESSING("PROCESSING"),
@@ -58,9 +43,6 @@ public class RequestStatusEntity {
             this.displayName = displayName;
         }
 
-        public String getDisplayName() {
-            return displayName;
-        }
     }
 
     public RequestStatusEntity withStatus(Status newStatus, String description) {

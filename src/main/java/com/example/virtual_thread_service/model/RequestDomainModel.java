@@ -1,7 +1,10 @@
 package com.example.virtual_thread_service.model;
 
+import lombok.Getter;
+
 import java.time.Instant;
 
+@Getter
 public final class RequestDomainModel {
     private final Long id;
     private final String payload;
@@ -19,8 +22,4 @@ public final class RequestDomainModel {
         return new RequestDomainModel(id, payload, status, createdAt);
     }
 
-    public Long getId() { return id; }
-    public String getPayload() { return payload; }
-    public String getStatus() { return status; }
-    public Instant getCreatedAt() { return createdAt; }
 }
