@@ -1,8 +1,8 @@
-package com.example.virtual_thread_service.mapper;
+package com.example.virtualthreadservice.mapper;
 
-import com.example.virtual_thread_service.dto.RequestResponseDTO;
-import com.example.virtual_thread_service.entity.RequestStatusEntity;
-import com.example.virtual_thread_service.model.RequestDomainModel;
+import com.example.virtualthreadservice.dto.RequestResponseDTO;
+import com.example.virtualthreadservice.entity.RequestStatusEntity;
+import com.example.virtualthreadservice.model.RequestDomainModel;
 
 public class RequestMapper {
 

@@ -1,4 +1,4 @@
-package com.example.virtual_thread_service.dto;
+package com.example.virtualthreadservice.dto;
 
 import java.util.Map;
 

@@ -1,4 +1,4 @@
-package com.example.virtual_thread_service;
+package com.example.virtualthreadservice;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

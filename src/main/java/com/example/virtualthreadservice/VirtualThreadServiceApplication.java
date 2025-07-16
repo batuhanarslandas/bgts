@@ -1,4 +1,4 @@
-package com.example.virtual_thread_service;
+package com.example.virtualthreadservice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
