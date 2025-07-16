@@ -1,4 +1,4 @@
-package com.example.virtual_thread_service.model;
+package com.example.virtualthreadservice.model;
 
 import lombok.Getter;
 

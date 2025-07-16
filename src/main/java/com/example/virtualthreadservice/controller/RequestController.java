@@ -1,8 +1,8 @@
-package com.example.virtual_thread_service.controller;
+package com.example.virtualthreadservice.controller;
 
-import com.example.virtual_thread_service.dto.RequestDTO;
-import com.example.virtual_thread_service.mapper.RequestMapper;
-import com.example.virtual_thread_service.service.RequestService;
+import com.example.virtualthreadservice.dto.RequestDTO;
+import com.example.virtualthreadservice.mapper.RequestMapper;
+import com.example.virtualthreadservice.service.RequestService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

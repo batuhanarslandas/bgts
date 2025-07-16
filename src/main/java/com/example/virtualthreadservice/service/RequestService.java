@@ -1,9 +1,9 @@
-package com.example.virtual_thread_service.service;
+package com.example.virtualthreadservice.service;
 
-import com.example.virtual_thread_service.entity.RequestStatusEntity;
-import com.example.virtual_thread_service.mapper.RequestMapper;
-import com.example.virtual_thread_service.model.RequestDomainModel;
-import com.example.virtual_thread_service.repository.RequestStatusRepository;
+import com.example.virtualthreadservice.entity.RequestStatusEntity;
+import com.example.virtualthreadservice.mapper.RequestMapper;
+import com.example.virtualthreadservice.model.RequestDomainModel;
+import com.example.virtualthreadservice.repository.RequestStatusRepository;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;

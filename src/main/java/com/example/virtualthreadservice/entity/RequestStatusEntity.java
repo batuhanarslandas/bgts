@@ -1,4 +1,4 @@
-package com.example.virtual_thread_service.entity;
+package com.example.virtualthreadservice.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
