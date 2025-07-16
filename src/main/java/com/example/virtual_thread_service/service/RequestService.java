@@ -1,18 +1,25 @@
 package com.example.virtual_thread_service.service;
 
-import com.example.virtual_thread_service.entity.RequestStatus;
+import com.example.virtual_thread_service.entity.RequestStatusEntity;
+import com.example.virtual_thread_service.mapper.RequestMapper;
+import com.example.virtual_thread_service.model.RequestDomainModel;
 import com.example.virtual_thread_service.repository.RequestStatusRepository;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 @Service
 public class RequestService {
+
+    private static final Logger logger = LoggerFactory.getLogger(RequestService.class);
 
     private final RequestStatusRepository repository;
     private final ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
@@ -44,32 +51,55 @@ public class RequestService {
 
     public Long submitRequest(String jsonPayload) {
         submitCounter.increment();
+        logger.info("Submit request received. Payload: {}", jsonPayload);
 
-        RequestStatus request = new RequestStatus();
-        request.setStatus(RequestStatus.Status.PENDING);
-        request.setDetails(jsonPayload);
-        repository.save(request);
+        RequestStatusEntity requestStatusEntity = new RequestStatusEntity(
+                null,
+                jsonPayload,
+                RequestStatusEntity.Status.PENDING,
+                "Waiting for processing",
+                Instant.now()
+        );
+
+        repository.save(requestStatusEntity);
 
         executor.submit(() -> {
             processingTimer.record(() -> {
                 try {
+                    logger.info("Processing started for ID: {}", requestStatusEntity.getId());
                     Thread.sleep(5000); // Mock 3rd party call
-                    request.setStatus(RequestStatus.Status.COMPLETED);
-                    request.setDetails("3rd party response here");
-                    repository.save(request);
+
+                    RequestStatusEntity updated = new RequestStatusEntity(
+                            requestStatusEntity.getId(),
+                            jsonPayload,
+                            RequestStatusEntity.Status.COMPLETED,
+                            "3rd party response here",
+                            requestStatusEntity.getCreatedAt()
+                    );
+
+                    repository.save(updated);
+                    logger.info("Processing completed for ID: {}", requestStatusEntity.getId());
                 } catch (InterruptedException e) {
-                    request.setStatus(RequestStatus.Status.FAILED);
-                    repository.save(request);
+                    logger.error("Processing failed: {}", e.getMessage());
+                    RequestStatusEntity failed = new RequestStatusEntity(
+                            requestStatusEntity.getId(),
+                            jsonPayload,
+                            RequestStatusEntity.Status.FAILED,
+                            "Error occurred",
+                            requestStatusEntity.getCreatedAt()
+                    );
+                    repository.save(failed);
                     errorCounter.increment();
                 }
             });
         });
 
-        return request.getId();
+        return requestStatusEntity.getId();
     }
 
-    public Optional<RequestStatus> getStatus(Long id) {
+    public Optional<RequestDomainModel> getStatus(Long id) {
         statusCounter.increment();
-        return repository.findById(id);
+        logger.info("Fetching status for ID: {}", id);
+        return repository.findById(id).map(RequestMapper::toDomain);
     }
 }
