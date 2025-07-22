@@ -7,11 +7,15 @@ services:
       - "9090:9090"
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - internal_net
 
   grafana:
     image: grafana/grafana
     ports:
       - "3000:3000"
+    networks:
+      - internal_net
 
   postgres:
     image: postgres:15
@@ -21,10 +25,16 @@ services:
       POSTGRES_DB: virtual_thread_db
       POSTGRES_USER: vtuser
       POSTGRES_PASSWORD: vtpassword
-    ports:
-      - "5432:5432"
     volumes:
       - pg_data:/var/lib/postgresql/data
+    expose:
+      - "5432"  # sadece iç ağdaki diğer servisler görebilir
+    networks:
+      - internal_net
 
 volumes:
   pg_data:
+
+networks:
+  internal_net:
+    driver: bridge
