@@ -26,6 +26,7 @@ public class RequestStatusEntity {
     @Enumerated(EnumType.STRING)
     private final Status status;
 
+    @Column(nullable = false)
     private final String details;
 
     @Column(nullable = false)
