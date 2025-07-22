@@ -18,6 +18,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Instant;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -75,7 +76,7 @@ public final class RequestService {
      * Bu metod, gelen JSON verisini veritabanına kaydeder ve işleme almak için bir thread başlatır.
      * İsteğin ID'si hemen geri döner, işleme arkada devam eder.
      */
-    public Long submitRequest(String jsonPayload) {
+    public Long submitRequest(Map<String, Object> jsonPayload) {
         submitCounter.increment();
         logger.info("Submit request received. Payload: {}", jsonPayload);
 
@@ -87,7 +88,7 @@ public final class RequestService {
     }
 
     // İsteği veritabanına PENDING durumunda kaydeder
-    private RequestStatusEntity saveInitialRequest(String jsonPayload) {
+    private RequestStatusEntity saveInitialRequest(Map<String, Object> jsonPayload) {
         RequestStatusEntity requestStatusEntity = RequestStatusEntity.builder()
                 .id(null)  // optional
                 .payload(jsonPayload)
