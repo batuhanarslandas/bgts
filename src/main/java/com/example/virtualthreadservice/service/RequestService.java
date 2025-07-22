@@ -4,6 +4,7 @@ import com.example.virtualthreadservice.entity.RequestStatusEntity;
 import com.example.virtualthreadservice.mapper.RequestMapper;
 import com.example.virtualthreadservice.model.RequestDomainModel;
 import com.example.virtualthreadservice.repository.RequestStatusRepository;
+import io.micrometer.core.annotation.Timed;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
@@ -109,14 +110,14 @@ public final class RequestService {
             repository.save(processing);
             logger.info("Request ID {} set to PROCESSING", processing.getId());
 
-            // İşlem süresi Prometheus metrikleri ile ölçülmektedir
-            processingTimer.record(() -> processRequest(requestEntity));
+            processRequest(processing);
         });
     }
 
     /**
      * Mock servisine istek atılır, dönen cevaba göre işlem durumu güncellenir.
      */
+    @Timed(value = "request_processing_duration", description = "Duration of processing 3rd party request")
     private void processRequest(RequestStatusEntity requestEntity) {
         try {
             logger.info("Processing started for ID: {}", requestEntity.getId());
