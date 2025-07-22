@@ -1,12 +1,15 @@
 package com.example.virtualthreadservice.entity;
 
+import com.vladmihalcea.hibernate.type.json.JsonType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Type;
 
 import java.time.Instant;
+import java.util.Map;
 
 @Entity
 @Table(name = "request_status")
@@ -20,8 +23,9 @@ public class RequestStatusEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private final String payload;
+    @Type(JsonType.class)
+    @Column(columnDefinition = "jsonb")
+    private Map<String, Object> payload;
 
     @Enumerated(EnumType.STRING)
     private final Status status;

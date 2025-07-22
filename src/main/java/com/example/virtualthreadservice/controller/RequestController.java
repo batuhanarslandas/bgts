@@ -30,7 +30,7 @@ public final class RequestController {
     @ApiResponse(responseCode = "202", description = "İstek kabul edildi")
     @PostMapping("/submit")
     public ResponseEntity<Map<String, Object>> submit(@RequestBody RequestDTO requestDTO) {
-        Long id = service.submitRequest(requestDTO.payload().toString());
+        Long id = service.submitRequest(requestDTO.payload());
         return ResponseEntity.accepted().body(Map.of("requestId", id));
     }
 
