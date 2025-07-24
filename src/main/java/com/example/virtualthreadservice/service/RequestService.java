@@ -17,9 +17,11 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -36,6 +38,9 @@ public final class RequestService {
     private final Counter statusCounter;
     private final Counter errorCounter;
     private final Timer processingTimer;
+    private final HttpClient httpClient = HttpClient.newBuilder()
+            .executor(Executors.newFixedThreadPool(200)) // max 200 parallel
+            .build();
 
     public RequestService(RequestStatusRepository repository, MeterRegistry meterRegistry) {
         this.repository = repository;
@@ -62,14 +67,14 @@ public final class RequestService {
      * Bu metod, dıştaki kendi oluşturmuş olduğumuz Python API'siyle
      * iletişim kurmak için kullanılır.
      */
-    public HttpResponse<String> callThirdPartyMockService() throws IOException, InterruptedException {
-        HttpClient client = HttpClient.newHttpClient();
+    public CompletableFuture<HttpResponse<String>> callThirdPartyMockService(){
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(THIRD_PARTY_URL))
+                .timeout(Duration.ofSeconds(10)) // HTTP timeout
                 .GET()
                 .build();
 
-        return client.send(request, HttpResponse.BodyHandlers.ofString());
+        return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString());
     }
 
     /**
@@ -117,16 +122,15 @@ public final class RequestService {
 
     /**
      * Mock servisine istek atılır, dönen cevaba göre işlem durumu güncellenir.
+     * @Timed anatasyonu Thredin çalışma süresini ölçüyor
      */
     @Timed(value = "request_processing_duration", description = "Duration of processing 3rd party request")
     private void processRequest(RequestStatusEntity requestEntity) {
-        try {
+
             logger.info("Processing started for ID: {}", requestEntity.getId());
 
             // Mock servisini çağır
-            HttpResponse<String> response = callThirdPartyMockService();
-
-            // Eğer cevap başarılıysa, durumu COMPLETED olarak güncelle
+        callThirdPartyMockService().thenAccept(response -> {
             if (response.statusCode() == 200) {
                 String responseBody = response.body();
                 logger.info("3rd party response received: {}", responseBody);
@@ -135,20 +139,20 @@ public final class RequestService {
                 repository.save(updated);
                 logger.info("Processing completed for ID: {}", requestEntity.getId());
             } else {
-                // Başarısız durumda hata fırlat ve catch bloğundan devam ettir
-                throw new RuntimeException("3rd party call failed with status code: " + response.statusCode());
+                failRequest(requestEntity, "3rd party call failed with status code: " + response.statusCode());
             }
-
-        } catch (Exception e) {
-            // Hata oluşursa durumu FAILED yap, hatayı metriklere yansıt
-            logger.error("Processing failed: {}", e.getMessage());
-            RequestStatusEntity failed = requestEntity.withStatus(RequestStatusEntity.Status.FAILED, "Error occurred: " + e.getMessage());
-            repository.save(failed);
-            errorCounter.increment();
-        }
+        }).exceptionally(ex -> {
+            failRequest(requestEntity, "Error occurred: " + ex.getMessage());
+            return null;
+        });
     }
 
-
+    private void failRequest(RequestStatusEntity entity, String reason) {
+        logger.error("Processing failed for ID {}: {}", entity.getId(), reason);
+        RequestStatusEntity failed = entity.withStatus(RequestStatusEntity.Status.FAILED, reason);
+        repository.save(failed);
+        errorCounter.increment();
+    }
     /**
      * Verilen ID’ye göre requestStatus değeri döndürülür.
      */
