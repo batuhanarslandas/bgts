@@ -126,11 +126,14 @@ public final class RequestService {
      * @Timed anatasyonu Thredin çalışma süresini ölçüyor
      */
     private void processRequest(RequestStatusEntity requestEntity) {
-        requestTimer.record(() -> {
-
         logger.info("Processing started for ID: {}", requestEntity.getId());
-        // Mock servisini çağır
+
+        Instant start = Instant.now(); // Ölçüm başlıyor
+
         callThirdPartyMockService().thenAccept(response -> {
+            Duration duration = Duration.between(start, Instant.now());
+            requestTimer.record(duration); // Gerçek sürenin kaydı
+
             if (response.statusCode() == 200) {
                 String responseBody = response.body();
                 logger.info("3rd party response received: {}", responseBody);
@@ -142,11 +145,13 @@ public final class RequestService {
                 failRequest(requestEntity, "3rd party call failed with status code: " + response.statusCode());
             }
         }).exceptionally(ex -> {
+            Duration duration = Duration.between(start, Instant.now());
+            requestTimer.record(duration); // Hata olsa da süreyi kaydet
             failRequest(requestEntity, "Error occurred: " + ex.getMessage());
             return null;
         });
-        });
     }
+
 
     private void failRequest(RequestStatusEntity entity, String reason) {
         logger.error("Processing failed for ID {}: {}", entity.getId(), reason);
