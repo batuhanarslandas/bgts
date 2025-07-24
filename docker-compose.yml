@@ -20,15 +20,26 @@ services:
   postgres:
     image: postgres:15
     container_name: pg_container
-    restart: always
     environment:
       POSTGRES_DB: virtual_thread_db
       POSTGRES_USER: vtuser
       POSTGRES_PASSWORD: vtpassword
     volumes:
       - pg_data:/var/lib/postgresql/data
+    networks:
+      - internal_net
+
+  springboot:
+    build: .
+    container_name: springboot_app
+    depends_on:
+      - postgres
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/virtual_thread_db
+      SPRING_DATASOURCE_USERNAME: vtuser
+      SPRING_DATASOURCE_PASSWORD: vtpassword
     ports:
-      - "5432:5432"
+      - "8080:8080"
     networks:
       - internal_net
 

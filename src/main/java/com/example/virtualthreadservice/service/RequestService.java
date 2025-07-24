@@ -4,7 +4,6 @@ import com.example.virtualthreadservice.entity.RequestStatusEntity;
 import com.example.virtualthreadservice.mapper.RequestMapper;
 import com.example.virtualthreadservice.model.RequestDomainModel;
 import com.example.virtualthreadservice.repository.RequestStatusRepository;
-import io.micrometer.core.annotation.Timed;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
@@ -12,7 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -125,9 +123,7 @@ public final class RequestService {
 
     /**
      * Mock servisine istek atılır, dönen cevaba göre işlem durumu güncellenir.
-     * @Timed anatasyonu Thredin çalışma süresini ölçüyor
      */
-    @Timed(value = "request_processing_duration", description = "Duration of processing 3rd party request")
     private void processRequest(RequestStatusEntity requestEntity) {
         requestTimer.record(() -> {
 
