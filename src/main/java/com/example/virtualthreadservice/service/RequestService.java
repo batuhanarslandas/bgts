@@ -9,6 +9,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
@@ -27,7 +28,8 @@ import java.util.concurrent.Executors;
 public final class RequestService {
 
     private static final Logger logger = LoggerFactory.getLogger(RequestService.class);
-    private static final String THIRD_PARTY_URL = "http://localhost:5000/mock";
+
+    private final String THIRD_PARTY_URL;
 
     private final RequestStatusRepository repository;
     private final ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
@@ -41,8 +43,9 @@ public final class RequestService {
             .executor(Executors.newFixedThreadPool(200)) // max 200 parallel
             .build();
 
-    public RequestService(RequestStatusRepository repository, MeterRegistry meterRegistry) {
+    public RequestService(RequestStatusRepository repository, MeterRegistry meterRegistry, @Value("${third.party.url}") String THIRD_PARTY_URL) {
         this.repository = repository;
+        this.THIRD_PARTY_URL = THIRD_PARTY_URL;
 
         this.submitCounter = Counter.builder("requests_submit_total")
                 .description("Total number of /submit requests")

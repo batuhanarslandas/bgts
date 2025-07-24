@@ -43,6 +43,15 @@ services:
     networks:
       - internal_net
 
+  mock-service:
+    build:
+      context: ./python-mock
+    container_name: mock_service
+    ports:
+      - "5000:5000"
+    networks:
+      - internal_net
+
 volumes:
   pg_data:
 

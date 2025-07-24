@@ -91,6 +91,7 @@
 				<filtering>true</filtering>
 				<excludes>
 					<exclude>application.properties</exclude>
+					<exclude>application-*.properties</exclude>
 				</excludes>
 			</resource>
 			<resource>
@@ -98,6 +99,7 @@
 				<filtering>false</filtering>
 				<includes>
 					<include>application.properties</include>
+					<include>application-*.properties</include>
 				</includes>
 			</resource>
 		</resources>
