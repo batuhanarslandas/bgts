@@ -7,6 +7,7 @@ import com.example.virtualthreadservice.repository.RequestStatusRepository;
 import io.micrometer.core.annotation.Timed;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -36,6 +37,8 @@ public final class RequestService {
     private final Counter submitCounter;
     private final Counter statusCounter;
     private final Counter errorCounter;
+    private final Timer requestTimer;
+
     private final HttpClient httpClient = HttpClient.newBuilder()
             .executor(Executors.newFixedThreadPool(200)) // max 200 parallel
             .build();
@@ -55,6 +58,11 @@ public final class RequestService {
                 .description("Total number of failed requests")
                 .register(meterRegistry);
 
+        this.requestTimer = Timer.builder("request_processing_duration")
+                .description("Processing time for requests")
+                .publishPercentiles(0.95, 0.99) // P95 ve P99
+                .publishPercentileHistogram()    // Prometheus için histogram
+                .register(meterRegistry);
 
     }
 
@@ -121,9 +129,9 @@ public final class RequestService {
      */
     @Timed(value = "request_processing_duration", description = "Duration of processing 3rd party request")
     private void processRequest(RequestStatusEntity requestEntity) {
+        requestTimer.record(() -> {
 
         logger.info("Processing started for ID: {}", requestEntity.getId());
-
         // Mock servisini çağır
         callThirdPartyMockService().thenAccept(response -> {
             if (response.statusCode() == 200) {
@@ -139,6 +147,7 @@ public final class RequestService {
         }).exceptionally(ex -> {
             failRequest(requestEntity, "Error occurred: " + ex.getMessage());
             return null;
+        });
         });
     }
 
