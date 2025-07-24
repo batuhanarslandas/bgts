@@ -27,8 +27,8 @@ services:
       POSTGRES_PASSWORD: vtpassword
     volumes:
       - pg_data:/var/lib/postgresql/data
-    expose:
-      - "5432"  # sadece iç ağdaki diğer servisler görebilir
+    ports:
+      - "5432:5432"
     networks:
       - internal_net
 
