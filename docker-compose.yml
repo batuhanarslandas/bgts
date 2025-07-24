@@ -34,7 +34,10 @@ services:
     container_name: springboot_app
     depends_on:
       - postgres
+      - mock-service
+
     environment:
+      SPRING_PROFILES_ACTIVE: prod
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/virtual_thread_db
       SPRING_DATASOURCE_USERNAME: vtuser
       SPRING_DATASOURCE_PASSWORD: vtpassword
